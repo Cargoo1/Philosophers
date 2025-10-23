@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/22 17:33:50 by acamargo          #+#    #+#             */
-/*   Updated: 2025/10/22 19:49:03 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/10/23 11:48:25 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,23 +56,29 @@ int	*verify_arguments(char **argv)
 	return (args_lst);
 }
 
-void	*routine(void *args)
+void	*start_routine(void *args)
 {
+	struct timeval	curr_t;
+	sleep(2);
+	gettimeofday(&curr_t, NULL);
+	printf("%lu", curr_t.tv_sec);
 	printf("%s\n", (char *)args);
 	return (NULL);
 }
 
 int	init_threads(s_philos *main)
 {
-	int	i;
+	int				i;
 
 	i = 0;
 	main->threads = malloc(sizeof(pthread_t) * *main->arguments);
 	if (!main->threads)
 		return (ERMALLOC);
+	if (gettimeofday(&main->reference, NULL))
+		return (1);
 	while (i < *main->arguments)
 	{
-		if (pthread_create(&main->threads[i], NULL, routine, "HO"))
+		if (pthread_create(&main->threads[i], NULL, start_routine, main))
 			return (ERTHREAD);
 		i++;
 	}
@@ -87,7 +93,7 @@ int	init_threads(s_philos *main)
 
 int	main(int argc, char **argv)
 {
-	s_philos	main;
+	s_philos		main;
 
 	if (argc > 6 || argc < 5)
 	{
@@ -98,6 +104,4 @@ int	main(int argc, char **argv)
 	if (!main.arguments)
 		return (FAILURE);
 	init_threads(&main);
-	
-
 }
