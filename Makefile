@@ -1,4 +1,4 @@
-SRCS = ft_atoi.c philo.c
+SRCS = ft_atoi.c philo.c time.c
 INCLUDES = philo.h
 CFLAGS = -Wall -Wextra -Werror -g3 -lpthread
 MAKE_FLAGS = --no-print-directory
