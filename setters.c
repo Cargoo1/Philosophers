@@ -1,24 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   time.c                                             :+:      :+:    :+:   */
+/*   setters.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/27 15:14:24 by acamargo          #+#    #+#             */
-/*   Updated: 2025/10/28 15:55:36 by acamargo         ###   ########.fr       */
+/*   Created: 2025/10/28 15:45:36 by acamargo          #+#    #+#             */
+/*   Updated: 2025/10/28 15:53:11 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-unsigned long	get_current_time(t_mode mode)
+void	set_bool(t_philos *main, int *boolean, int value)
 {
-	struct timeval	current_t;
-
-	if (gettimeofday(&current_t, NULL))
-		return (-1);
-	if (mode == MILISEC)
-		return (current_t.tv_sec * 1000 + current_t.tv_usec / 1000);
-	return (42);
+	pthread_mutex_lock(&main->setter);
+	*boolean = value;
+	pthread_mutex_unlock(&main->setter);
 }

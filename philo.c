@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/22 17:33:50 by acamargo          #+#    #+#             */
-/*   Updated: 2025/10/27 15:24:08 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/10/28 15:56:51 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,55 +60,6 @@ int	*verify_arguments(char **argv)
 	return (args_lst);
 }
 
-int	ft_putlog(t_childs *thread, int id, int mode)
-{
-	pthread_mutex_lock(&thread->main->log);
-	if (mode == 0)
-		printf("(%d) %d picked the fork %d\n", get_current_time(thread->main), thread->id, id);
-	else if (mode == 1)
-		printf("(%d) %d is eating\n", get_current_time(thread->main), thread->id);
-	else if (mode == 2)
-		printf("(%d) %d finished eating\n", get_current_time(thread->main), thread->id);
-	pthread_mutex_unlock(&thread->main->log);
-	return (0);
-}
-
-int	try_to_eat(t_childs	*thread)
-{
-	int	idx;
-
-	idx = thread->id;
-	pthread_mutex_lock(&thread->main->forks[idx]);
-	ft_putlog(thread, idx, 0);
-	if (idx == *thread->main->arguments - 1)
-		pthread_mutex_lock(&thread->main->forks[0]);
-	else
-		pthread_mutex_lock(&thread->main->forks[idx + 1]);
-	if (idx == *thread->main->arguments - 1)
-		ft_putlog(thread, 0, 0);
-	else
-		ft_putlog(thread, idx + 1, 0);
-	ft_putlog(thread, idx, 1);
-	usleep(thread->main->arguments[2] * 1000);
-	pthread_mutex_unlock(&thread->main->forks[idx]);
-	if (idx == *thread->main->arguments - 1)
-		pthread_mutex_unlock(&thread->main->forks[0]);
-	else
-		pthread_mutex_unlock(&thread->main->forks[idx + 1]);
-	return (0);
-}
-
-void	*routine(void *args)
-{
-	t_childs	*thread;
-
-	thread = (t_childs *)args;
-	pthread_mutex_lock(&thread->main->eating);
-	try_to_eat(thread);
-	pthread_mutex_unlock(&thread->main->eating);
-	ft_putlog(thread, thread->id, 2);
-	return (NULL);
-}
 
 int	destroy_mutex(t_philos *main, int n_forks)
 {
@@ -134,6 +85,8 @@ int	init_mutex(t_philos *main, int n_forks)
 		i++;
 	}
 	pthread_mutex_init(&main->log, NULL);
+	pthread_mutex_init(&main->setter, NULL);
+	pthread_mutex_init(&main->getter, NULL);
 	pthread_mutex_init(&main->eating, NULL);
 	return (0);
 }
@@ -170,14 +123,14 @@ int	init_threads(t_philos *main)
 		return (ERMALLOC);
 	init_mutex(main, main->arguments[0]);
 	childs = init_childs(main);
-	if (gettimeofday(&main->reference, NULL))
-		return (1);
 	while (i < *main->arguments)
 	{
 		if (pthread_create(&main->threads[i], NULL, routine, &childs[i]))
 			return (ERTHREAD);
 		i++;
 	}
+	main->reference = get_current_time(MILISEC);
+	set_bool(main, &main->dinner_ready, 1);
 	i = 0;
 	while (i < *main->arguments)
 	{

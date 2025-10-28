@@ -1,24 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   time.c                                             :+:      :+:    :+:   */
+/*   getters.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/27 15:14:24 by acamargo          #+#    #+#             */
-/*   Updated: 2025/10/28 15:55:36 by acamargo         ###   ########.fr       */
+/*   Created: 2025/10/28 15:41:23 by acamargo          #+#    #+#             */
+/*   Updated: 2025/10/28 15:51:15 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-unsigned long	get_current_time(t_mode mode)
+int	get_bool(t_philos *main, int *boolean)
 {
-	struct timeval	current_t;
-
-	if (gettimeofday(&current_t, NULL))
-		return (-1);
-	if (mode == MILISEC)
-		return (current_t.tv_sec * 1000 + current_t.tv_usec / 1000);
-	return (42);
+	int	res;
+	pthread_mutex_lock(&main->getter);
+	res = *boolean;
+	pthread_mutex_unlock(&main->getter);
+	return (res);
 }
