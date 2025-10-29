@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/22 17:33:50 by acamargo          #+#    #+#             */
-/*   Updated: 2025/10/28 15:56:51 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/10/29 22:49:45 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 int	double_pointer_len(char **s)
 {
@@ -61,37 +62,41 @@ int	*verify_arguments(char **argv)
 }
 
 
-int	destroy_mutex(t_philos *main, int n_forks)
+int	destroy_mutex(pthread_mutex_t *forks, int n_forks)
 {
 	int	i;
 
 	i = 0;
 	while (i < n_forks)
 	{
-		pthread_mutex_destroy(&main->forks[i]);
+		pthread_mutex_destroy(&forks[i]);
 		i++;
 	}
 	return (0);
 }
 
-int	init_mutex(t_philos *main, int n_forks)
+int	init_mutex(pthread_mutex_t *mtx)
+{
+	if (pthread_mutex_init(mtx, NULL))
+		return (1);
+	return (0);
+}
+
+int	create_forks(pthread_mutex_t *forks, int n_forks)
 {
 	int	i;
 
 	i = 0;
 	while (i < n_forks)
 	{
-		pthread_mutex_init(&main->forks[i], NULL);
+		if (pthread_mutex_init(&forks[i], NULL))
+			return (1);
 		i++;
 	}
-	pthread_mutex_init(&main->log, NULL);
-	pthread_mutex_init(&main->setter, NULL);
-	pthread_mutex_init(&main->getter, NULL);
-	pthread_mutex_init(&main->eating, NULL);
 	return (0);
 }
 
-t_childs	*init_childs(t_philos *main)
+t_childs	*init_childs(t_philos *main, pthread_mutex_t *forks, pthread_t *threads)
 {
 	int			i;
 	t_childs	*childs;
@@ -103,6 +108,17 @@ t_childs	*init_childs(t_philos *main)
 	while (i < main->arguments[0])
 	{
 		(childs[i]).id = i;
+		if ((childs[i]).id % 2 == 0)
+		{
+			(childs[i]).firts_fork = &forks[(i + 1) % *main->arguments];
+			(childs[i]).second_fork = &forks[i];
+		}
+		else
+		{
+			(childs[i]).firts_fork = &forks[i];
+			(childs[i]).second_fork = &forks[(i + 1) % *main->arguments];
+		}
+		(childs[i]).thread = &threads[i];
 		(childs[i]).main = main;
 		i++;
 	}
@@ -111,21 +127,27 @@ t_childs	*init_childs(t_philos *main)
 
 int	init_threads(t_philos *main)
 {
-	int			i;
-	t_childs	*childs;
+	int				i;
+	pthread_mutex_t	*forks;
+	pthread_t		*threads;
+	t_childs		*childs;
 
 	i = 0;
-	main->threads = malloc(sizeof(pthread_t) * *main->arguments);
-	if (!main->threads)
+	threads = malloc(sizeof(pthread_t) * *main->arguments);
+	if (!threads)
 		return (ERMALLOC);
-	main->forks = malloc(sizeof(pthread_mutex_t) * *main->arguments);
-	if (!main->forks)
+	forks = malloc(sizeof(pthread_mutex_t) * *main->arguments);
+	if (!forks)
 		return (ERMALLOC);
-	init_mutex(main, main->arguments[0]);
-	childs = init_childs(main);
+	if (create_forks(forks, main->arguments[0]))
+		return (1);
+	childs = init_childs(main, forks, threads);
+	init_mutex(&main->log);
+	init_mutex(&main->global);
+	init_mutex(&main->eating);
 	while (i < *main->arguments)
 	{
-		if (pthread_create(&main->threads[i], NULL, routine, &childs[i]))
+		if (pthread_create((childs[i]).thread, NULL, routine, &childs[i]))
 			return (ERTHREAD);
 		i++;
 	}
@@ -134,12 +156,12 @@ int	init_threads(t_philos *main)
 	i = 0;
 	while (i < *main->arguments)
 	{
-		pthread_join(main->threads[i], NULL);
+		pthread_join(*(childs[i]).thread, NULL);
 		i++;
 	}
-	free(main->threads);
-	destroy_mutex(main, *main->arguments);
-	free(main->forks);
+	free(threads);
+	destroy_mutex(forks, *main->arguments);
+	free(forks);
 	free(main->arguments);
 	return (0);
 }
@@ -154,6 +176,9 @@ int	main(int argc, char **argv)
 		return (1);
 	}
 	main.arguments = verify_arguments(argv);
+	main.stop_dinner = 0;
+	main.dinner_ready = 0;
+	main.thread_turn = 0;
 	if (!main.arguments)
 		return (FAILURE);
 	init_threads(&main);

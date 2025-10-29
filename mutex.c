@@ -1,29 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   putlog.c                                           :+:      :+:    :+:   */
+/*   mutex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/28 15:35:47 by acamargo          #+#    #+#             */
-/*   Updated: 2025/10/29 18:06:06 by acamargo         ###   ########.fr       */
+/*   Created: 2025/10/29 22:33:48 by acamargo          #+#    #+#             */
+/*   Updated: 2025/10/29 22:55:47 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int	ft_putlog(t_childs *thread, int id, int mode)
+int	change_mtx(pthread_mutex_t *mtx, t_mode mode)
 {
-	long	time;
-
-	time = get_current_time(MILISEC) - thread->main->reference;
-	pthread_mutex_lock(&thread->main->log);
-	if (mode == 0)
-		printf("(%ld) %d picked the fork %d\n", time, thread->id, id);
-	else if (mode == 1)
-		printf("(%ld) %d is eating\n", time, thread->id);
-	else if (mode == 2)
-		printf("(%ld) %d finished eating\n", time, thread->id);
-	pthread_mutex_unlock(&thread->main->log);
+	if (mode == LOCK)
+	{
+		if (pthread_mutex_lock(mtx))
+			return (1);
+	}
+	else if (mode == UNLOCK)
+	{
+		if (pthread_mutex_unlock(mtx))
+			return (1);
+	}
 	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:41:23 by acamargo          #+#    #+#             */
-/*   Updated: 2025/10/28 15:51:15 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/10/29 22:35:30 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,21 @@
 int	get_bool(t_philos *main, int *boolean)
 {
 	int	res;
-	pthread_mutex_lock(&main->getter);
+	if (change_mtx(&main->global, LOCK))
+		return (1);
 	res = *boolean;
-	pthread_mutex_unlock(&main->getter);
+	if (change_mtx(&main->global, UNLOCK))
+		return (1);
+	return (res);
+}
+
+int	get_int(t_philos *main, int *num)
+{
+	int	res;
+	if (change_mtx(&main->global, LOCK))
+		return (1);
+	res = *num;
+	if (change_mtx(&main->global, UNLOCK))
+		return (1);
 	return (res);
 }

@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:45:36 by acamargo          #+#    #+#             */
-/*   Updated: 2025/10/28 15:53:11 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/10/29 22:36:32 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,18 @@
 
 void	set_bool(t_philos *main, int *boolean, int value)
 {
-	pthread_mutex_lock(&main->setter);
+	if (change_mtx(&main->global, LOCK))
+		return;
 	*boolean = value;
-	pthread_mutex_unlock(&main->setter);
+	if (change_mtx(&main->global, UNLOCK))
+		return;
+}
+
+void	set_int(t_philos *main, int *num, int value)
+{
+	if (change_mtx(&main->global, LOCK))
+		return;
+	*num = value;
+	if (change_mtx(&main->global, UNLOCK))
+		return;
 }
