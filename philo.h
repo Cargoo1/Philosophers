@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/22 17:34:39 by acamargo          #+#    #+#             */
-/*   Updated: 2025/10/29 22:34:24 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/10/31 22:40:17 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,22 +38,34 @@ typedef struct s_philos
 {
 	int				*arguments;
 	int				dinner_ready;
+	int				all_full;
 	int				stop_dinner;
+	int				someone_died;
 	int				thread_turn;
 	pthread_mutex_t	log;
 	pthread_mutex_t	global;
 	pthread_mutex_t	eating;
-	unsigned long	reference;
+	struct s_childs	*childs;
+	struct s_forks	*forks;
+	long			reference;
 	struct timeval	current;
 }	t_philos;
+
+typedef struct s_forks
+{
+	int				id;
+	pthread_mutex_t	fork;
+}	t_forks;
 
 typedef struct	s_childs
 {
 	pthread_t		*thread;
 	int				id;
+	long			last_meal;
+	int				meals;
 	t_philos		*main;
-	pthread_mutex_t	*firts_fork;
-	pthread_mutex_t	*second_fork;
+	t_forks			*firts_fork;
+	t_forks			*second_fork;
 }	t_childs;
 
 typedef enum t_mode
@@ -62,7 +74,12 @@ typedef enum t_mode
 	MICROSEC,
 	SEC,
 	UNLOCK,
-	LOCK
+	LOCK,
+	EATING,
+	PICKED,
+	SLEEPING,
+	THINKING,
+	DIED
 }	t_mode;
 
 // Setters and getteres
@@ -74,6 +91,10 @@ void	set_bool(t_philos *main, int *boolean, int value);
 int		get_int(t_philos *main, int *num);
 
 void	set_int(t_philos *main, int *num, int value);
+
+void	set_long(t_philos *main, long *num, long value);
+
+long	get_long(t_philos *main, long *num);
 //
 
 // Mutex
@@ -84,9 +105,13 @@ int		change_mtx(pthread_mutex_t *mtx, t_mode mode);
 void	ft_usleep(t_philos *main, sec microsec);
 //
 
+int		create_monitor(t_philos *main, t_childs *monitor);
+
+void	wait_all_childs(t_philos *main);
+
 int		ft_atoi(char *string);
 
-int		ft_putlog(t_childs *thread, int id, int mode);
+int		ft_putlog(t_childs *thread, int id, t_mode mode);
 
 long	get_current_time(t_mode mode);
 
