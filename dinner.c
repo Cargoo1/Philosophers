@@ -6,13 +6,12 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:34:18 by acamargo          #+#    #+#             */
-/*   Updated: 2025/10/31 22:51:30 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/01 17:33:11 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 #include <stdio.h>
-#include <stdlib.h>
 
 int	try_to_eat(t_childs	*thread, t_philos *main)
 {
@@ -20,7 +19,7 @@ int	try_to_eat(t_childs	*thread, t_philos *main)
 	ft_putlog(thread, thread->firts_fork->id, PICKED);
 	change_mtx(&thread->second_fork->fork, LOCK);
 	ft_putlog(thread, thread->second_fork->id, PICKED);
-	set_long(main, &thread->last_meal, get_current_time(MILISEC));
+	set_long(&thread->mtx_philo, &thread->last_meal, get_current_time(MILISEC));
 	ft_putlog(thread, thread->last_meal, EATING);
 	ft_usleep(main, main->arguments[2] * 1000);
 	change_mtx(&thread->firts_fork->fork, UNLOCK);
@@ -30,7 +29,7 @@ int	try_to_eat(t_childs	*thread, t_philos *main)
 
 void	wait_all_childs(t_philos *main)
 {
-	while (!get_bool(main, &main->dinner_ready))
+	while (!get_bool(&main->global, &main->dinner_ready))
 		;
 }
 
@@ -43,7 +42,7 @@ void	ft_usleep(t_philos *main, sec microsec)
 	start = get_current_time(MICROSEC);
 	while (get_current_time(MICROSEC) - start < microsec)
 	{
-		if (get_bool(main, &main->stop_dinner))
+		if (get_bool(&main->global, &main->stop_dinner))
 			break;
 		elapsed = get_current_time(MICROSEC) - start;
 		rem = microsec - elapsed;
@@ -61,18 +60,7 @@ int	sleeping(t_childs *thread, t_philos *main)
 {
 	if (ft_putlog(thread, thread->id, SLEEPING))
 		return (1);
-	sec start;
-
-	start = get_current_time(MILISEC);
-	while (get_current_time(MILISEC) - start < main->arguments[3])
-	{
-		if (get_current_time(MILISEC) - thread->last_meal > main->arguments[1])
-		{
-			ft_putlog(thread, thread->id, DIED);
-			exit(1);
-		}
-		ft_usleep(main, 350);
-	}
+	ft_usleep(main, main->arguments[3] *1000);
 	return (0);
 }
 
@@ -103,8 +91,11 @@ void	*routine(void *args)
 		one_philo()
 	*/
 	wait_all_childs(thread->main);
-	set_long(main, &thread->last_meal, get_current_time(MILISEC));
-	while (!get_bool(main, &main->stop_dinner))
+	set_long(&thread->mtx_philo, &thread->last_meal, get_current_time(MILISEC));
+	set_bool(&thread->mtx_philo, &thread->ready, 1);
+	if (thread->id % 2 == 0)
+		ft_usleep(main, main->arguments[2] * 1000);
+	while (!get_bool(&main->global, &main->stop_dinner))
 	{
 		try_to_eat(thread, main);
 		sleeping(thread, main);

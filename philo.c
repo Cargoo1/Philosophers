@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/22 17:33:50 by acamargo          #+#    #+#             */
-/*   Updated: 2025/10/31 22:42:39 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/01 15:52:27 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,9 @@ t_childs	*init_childs(t_philos *main, t_forks *forks, pthread_t *threads)
 			(childs[i]).second_fork = &forks[i];
 		}
 		(childs[i]).thread = &threads[i];
+		init_mutex(&childs[i].mtx_philo);
 		(childs[i]).main = main;
+		(childs[i]).ready = 0;
 		(childs[i]).last_meal = 0;
 		(childs[i]).meals = 0;
 		i++;
@@ -127,14 +129,14 @@ int	init_threads(t_philos *main)
 {
 	int				i;
 	pthread_t		*threads;
-	t_childs		monitor;
+	t_childs		*monitor;
 
 	i = 0;
 	threads = malloc(sizeof(pthread_t) * *main->arguments);
 	if (!threads)
 		return (ERMALLOC);
-	monitor.thread = malloc(sizeof(pthread_t));
-	if (!monitor.thread)
+	monitor = malloc(sizeof(t_childs));
+	if (!monitor)
 		return (ERMALLOC);
 	main->forks = malloc(sizeof(t_forks) * *main->arguments);
 	if (!main->forks)
@@ -145,16 +147,16 @@ int	init_threads(t_philos *main)
 	init_mutex(&main->log);
 	init_mutex(&main->global);
 	init_mutex(&main->eating);
-	//if (create_monitor(main, &monitor))
-		//return (1);
+	if (create_monitor(main, monitor))
+		return (1);
 	while (i < *main->arguments)
 	{
 		if (pthread_create((main->childs[i]).thread, NULL, routine, &main->childs[i]))
 			return (ERTHREAD);
 		i++;
 	}
-	set_long(main, &main->reference, get_current_time(MILISEC));
-	set_bool(main, &main->dinner_ready, 1);
+	set_long(&main->global, &main->reference, get_current_time(MILISEC));
+	set_bool(&main->global, &main->dinner_ready, 1);
 	i = 0;
 	while (i < *main->arguments)
 	{

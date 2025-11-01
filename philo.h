@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/22 17:34:39 by acamargo          #+#    #+#             */
-/*   Updated: 2025/10/31 22:40:17 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/01 15:51:55 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,9 +60,11 @@ typedef struct s_forks
 typedef struct	s_childs
 {
 	pthread_t		*thread;
+	pthread_mutex_t	mtx_philo;
 	int				id;
 	long			last_meal;
 	int				meals;
+	int				ready;
 	t_philos		*main;
 	t_forks			*firts_fork;
 	t_forks			*second_fork;
@@ -84,17 +86,17 @@ typedef enum t_mode
 
 // Setters and getteres
 
-int		get_bool(t_philos *main, int *boolean);
+int		get_bool(pthread_mutex_t *mtx, int *boolean);
 
-void	set_bool(t_philos *main, int *boolean, int value);
+void	set_bool(pthread_mutex_t *mtx, int *boolean, int value);
 
-int		get_int(t_philos *main, int *num);
+int		get_int(pthread_mutex_t *mtx, int *num);
 
-void	set_int(t_philos *main, int *num, int value);
+void	set_int(pthread_mutex_t *mtx, int *num, int value);
 
-void	set_long(t_philos *main, long *num, long value);
+void	set_long(pthread_mutex_t *mtx, long *num, long value);
 
-long	get_long(t_philos *main, long *num);
+long	get_long(pthread_mutex_t *mtx, long *num);
 //
 
 // Mutex
