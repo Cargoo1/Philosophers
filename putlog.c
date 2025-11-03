@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:35:47 by acamargo          #+#    #+#             */
-/*   Updated: 2025/10/31 22:39:12 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/03 21:35:40 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ int	ft_putlog(t_childs *thread, int id, t_mode mode)
 {
 	long	time;
 
-	time = get_current_time(MILISEC) - thread->main->reference;
+	time = get_current_time(MILISEC) - thread->main->t_t_start;
 	pthread_mutex_lock(&thread->main->log);
 	(void)id;
 	if (mode == PICKED)

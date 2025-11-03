@@ -1,48 +1,43 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   mutex.c                                            :+:      :+:    :+:   */
+/*   forks.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/29 22:33:48 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/03 21:08:54 by acamargo         ###   ########.fr       */
+/*   Created: 2025/11/03 21:09:23 by acamargo          #+#    #+#             */
+/*   Updated: 2025/11/03 21:10:12 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int	change_mtx(pthread_mutex_t *mtx, t_mode mode)
-{
-	if (mode == LOCK)
-	{
-		if (pthread_mutex_lock(mtx))
-			return (1);
-	}
-	else if (mode == UNLOCK)
-	{
-		if (pthread_mutex_unlock(mtx))
-			return (1);
-	}
-	return (0);
-}
-
-int	destroy_mutex(t_forks *forks, int n_forks)
+int	create_forks(t_philos *main, t_forks *forks, int n_forks)
 {
 	int	i;
 
 	i = 0;
 	while (i < n_forks)
 	{
-		pthread_mutex_destroy(&forks[i].fork);
+		if (pthread_mutex_init(&forks[i].fork, NULL))
+			return (main->errno = ERMUTEX, ERMUTEX);
+		forks[i].id = i;
 		i++;
 	}
 	return (0);
 }
 
-int	init_mutex(pthread_mutex_t *mtx)
+int	assing_forks(t_philos *main, t_forks *forks, t_childs *childs, int i)
 {
-	if (pthread_mutex_init(mtx, NULL))
-		return (ERMUTEX);
+	if ((childs[i]).id % 2 == 0)
+	{
+		(childs[i]).firts_fork = &forks[i];
+		(childs[i]).second_fork = &forks[(i + 1) % main->n_philos];
+	}
+	else
+	{
+		(childs[i]).firts_fork = &forks[(i + 1) % main->n_philos];
+		(childs[i]).second_fork = &forks[i];
+	}
 	return (0);
 }

@@ -6,31 +6,57 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:34:18 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/01 17:33:11 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/03 21:39:12 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-#include <stdio.h>
+
+void test_sleep(t_philos *main, sec time)
+{
+	sec	begining;
+
+	(void)main;
+	begining = get_current_time(MILISEC);
+	while (get_current_time(MILISEC) < begining + time)
+		usleep(100);
+}
 
 int	try_to_eat(t_childs	*thread, t_philos *main)
 {
+	pthread_mutex_lock(&thread->firts_fork->fork);
+	pthread_mutex_lock(&thread->second_fork->fork);
+	/*
 	change_mtx(&thread->firts_fork->fork, LOCK);
-	ft_putlog(thread, thread->firts_fork->id, PICKED);
+	//ft_putlog(thread, thread->firts_fork->id, PICKED);
 	change_mtx(&thread->second_fork->fork, LOCK);
-	ft_putlog(thread, thread->second_fork->id, PICKED);
-	set_long(&thread->mtx_philo, &thread->last_meal, get_current_time(MILISEC));
+	//ft_putlog(thread, thread->second_fork->id, PICKED);
+	*/
+	if (get_bool(&main->global, &main->stop_dinner))
+	{
+		pthread_mutex_unlock(&thread->second_fork->fork);
+		pthread_mutex_unlock(&thread->firts_fork->fork);
+		return (1);
+	}
 	ft_putlog(thread, thread->last_meal, EATING);
-	ft_usleep(main, main->arguments[2] * 1000);
+	set_long(&thread->mtx_philo, &thread->last_meal, get_current_time(MILISEC));
+	test_sleep(main, main->t_t_eat);
+	//ft_usleep(main, main->t_t_eat * 1000);
+	pthread_mutex_unlock(&thread->second_fork->fork);
+	pthread_mutex_unlock(&thread->firts_fork->fork);
+	ft_putlog(thread, 1, SLEEPING);
+	test_sleep(main, main->t_t_sleep);
+	/*
 	change_mtx(&thread->firts_fork->fork, UNLOCK);
 	change_mtx(&thread->second_fork->fork, UNLOCK);
+	*/
 	return (0);
 }
 
 void	wait_all_childs(t_philos *main)
 {
-	while (!get_bool(&main->global, &main->dinner_ready))
-		;
+	while (get_current_time(MILISEC) < main->t_t_start)
+		usleep(100);
 }
 
 void	ft_usleep(t_philos *main, sec microsec)
@@ -58,24 +84,29 @@ void	ft_usleep(t_philos *main, sec microsec)
 
 int	sleeping(t_childs *thread, t_philos *main)
 {
-	if (ft_putlog(thread, thread->id, SLEEPING))
-		return (1);
-	ft_usleep(main, main->arguments[3] *1000);
+	if (get_bool(&main->global, &main->stop_dinner))
+		return (0);
+	ft_putlog(thread, thread->id, SLEEPING);
+	test_sleep(main, main->t_t_sleep);
 	return (0);
 }
 
 
-int	thinking(t_childs *thread, t_philos *main)
+int	thinking(t_childs *thread, t_philos *main, int silent_mode)
 {
-	sec	time_to_think;
+	//sec	time_to_think;
 
 	if (thread->id % 2 != 0)
 		return (0);
-	time_to_think = main->arguments[1] - main->arguments[2] + main->arguments[3];
-	if (time_to_think <= 0)
-		time_to_think = 0;
-	ft_putlog(thread, thread->id, THINKING);
-	ft_usleep(main, time_to_think * 1000);
+	if (get_bool(&main->global, &main->stop_dinner))
+		return (0);
+	if (!silent_mode)
+		ft_putlog(thread, thread->id, THINKING);
+	else
+	{
+		test_sleep(main, main->t_t_eat);
+		return (0);
+	}
 	return (0);
 }
 
@@ -86,20 +117,16 @@ void	*routine(void *args)
 
 	thread = (t_childs *)args;
 	main = thread->main;
-	/* TODO
-	if (*main->arguments == 1)
-		one_philo()
-	*/
+	set_long(&thread->mtx_philo, &thread->last_meal, main->t_t_start);
 	wait_all_childs(thread->main);
-	set_long(&thread->mtx_philo, &thread->last_meal, get_current_time(MILISEC));
-	set_bool(&thread->mtx_philo, &thread->ready, 1);
-	if (thread->id % 2 == 0)
-		ft_usleep(main, main->arguments[2] * 1000);
-	while (!get_bool(&main->global, &main->stop_dinner))
+	//set_bool(&thread->mtx_philo, &thread->ready, 1);
+	thinking(thread, main, 1);
+	while (1)
 	{
 		try_to_eat(thread, main);
-		sleeping(thread, main);
-		//thinking(thread, main);
+		if (get_bool(&main->global, &main->stop_dinner))
+			break ;
+		thinking(thread, main, 0);
 	}
 	return (NULL);
 }

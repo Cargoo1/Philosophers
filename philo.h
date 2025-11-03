@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/22 17:34:39 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/01 15:51:55 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/03 21:10:59 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,45 +30,11 @@
 
 # define ERTHREAD 3
 
+# define ERMUTEX 4
+
 # define TIME long
 
 typedef TIME sec;
-
-typedef struct s_philos
-{
-	int				*arguments;
-	int				dinner_ready;
-	int				all_full;
-	int				stop_dinner;
-	int				someone_died;
-	int				thread_turn;
-	pthread_mutex_t	log;
-	pthread_mutex_t	global;
-	pthread_mutex_t	eating;
-	struct s_childs	*childs;
-	struct s_forks	*forks;
-	long			reference;
-	struct timeval	current;
-}	t_philos;
-
-typedef struct s_forks
-{
-	int				id;
-	pthread_mutex_t	fork;
-}	t_forks;
-
-typedef struct	s_childs
-{
-	pthread_t		*thread;
-	pthread_mutex_t	mtx_philo;
-	int				id;
-	long			last_meal;
-	int				meals;
-	int				ready;
-	t_philos		*main;
-	t_forks			*firts_fork;
-	t_forks			*second_fork;
-}	t_childs;
 
 typedef enum t_mode
 {
@@ -83,6 +49,58 @@ typedef enum t_mode
 	THINKING,
 	DIED
 }	t_mode;
+
+typedef struct s_philos
+{
+	int				n_philos;
+	int				t_t_eat;
+	int				t_t_sleep;
+	int				t_t_die;
+	int				all_full;
+	int				stop_dinner;
+	int				someone_died;
+	int				errno;
+	pthread_mutex_t	log;
+	pthread_mutex_t	global;
+	struct s_childs	*childs;
+	struct s_forks	*forks;
+	long			t_t_start;
+}	t_philos;
+
+typedef struct s_forks
+{
+	int				id;
+	pthread_mutex_t	fork;
+}	t_forks;
+
+typedef struct s_printer
+{
+	pthread_t	thread;
+	t_philos	*main;
+	int			id_thread;
+	int			id_fork;
+	t_mode		mode;
+}	t_printer;
+
+
+typedef struct	s_childs
+{
+	pthread_t		thread;
+	pthread_mutex_t	mtx_philo;
+	int				id;
+	long			last_meal;
+	int				meals;
+	int				ready;
+	t_philos		*main;
+	t_forks			*firts_fork;
+	t_printer		printer;
+	pthread_t		thread_p;
+	t_forks			*second_fork;
+}	t_childs;
+
+
+
+void test_sleep(t_philos *main, sec time);
 
 // Setters and getteres
 
@@ -101,10 +119,36 @@ long	get_long(pthread_mutex_t *mtx, long *num);
 
 // Mutex
 
+int		init_mutex(pthread_mutex_t *mtx);
+
 int		change_mtx(pthread_mutex_t *mtx, t_mode mode);
 
+int		destroy_mutex(t_forks *forks, int n_forks);
+
+//
+
 // Precise usleep
+
 void	ft_usleep(t_philos *main, sec microsec);
+
+//
+
+// Threads
+
+int		init_childs(t_philos *main, t_forks *forks);
+
+int		init_threads(t_philos *main);
+
+int		create_threads(t_philos *main);
+
+//
+
+//	Forks
+
+int		create_forks(t_philos *main, t_forks *forks, int n_forks);
+
+int		assing_forks(t_philos *main, t_forks *forks, t_childs *childs, int i);
+
 //
 
 int		create_monitor(t_philos *main, t_childs *monitor);
@@ -112,6 +156,8 @@ int		create_monitor(t_philos *main, t_childs *monitor);
 void	wait_all_childs(t_philos *main);
 
 int		ft_atoi(char *string);
+
+char	*ft_ltoa(long n);
 
 int		ft_putlog(t_childs *thread, int id, t_mode mode);
 

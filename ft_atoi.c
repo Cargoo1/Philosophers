@@ -6,11 +6,12 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/09 14:41:02 by acamargo          #+#    #+#             */
-/*   Updated: 2025/10/23 11:13:57 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/03 19:37:47 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <limits.h>
+#include "philo.h"
 
 static int	ft_str_is_numeric(char c)
 {
@@ -49,7 +50,7 @@ int	ft_atoi(char *str)
 {
 	int		i;
 	int		sign;
-	long	numero;
+	int		numero;
 
 	i = 0;
 	sign = 1;
