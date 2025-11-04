@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/22 17:34:39 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/03 21:10:59 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/04 17:51:05 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ typedef struct s_philos
 {
 	int				n_philos;
 	int				t_t_eat;
+	int				t_t_think;
 	int				t_t_sleep;
 	int				t_t_die;
 	int				all_full;
@@ -62,6 +63,7 @@ typedef struct s_philos
 	int				errno;
 	pthread_mutex_t	log;
 	pthread_mutex_t	global;
+	pthread_mutex_t	start_dinner;
 	struct s_childs	*childs;
 	struct s_forks	*forks;
 	long			t_t_start;

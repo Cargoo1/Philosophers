@@ -6,12 +6,12 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:09:48 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/03 21:31:06 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/04 18:43:44 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-#include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
 
 void	wait_to_dinner(t_philos *main)
@@ -34,6 +34,7 @@ void	wait_to_dinner(t_philos *main)
 		}
 		if (all_ready == main->n_philos)
 			break;
+		usleep(500);
 	}
 }
 
@@ -51,7 +52,8 @@ void	*monitoring_philos(void *args)
 	philos = main->childs;
 	//change_mtx(&monitor->mtx_philo, LOCK);
 	//change_mtx(&monitor->mtx_philo, UNLOCK);
-	wait_all_childs(main);
+	wait_to_dinner(main);
+	//wait_all_childs(main);
 	i = 0;
 	while (1)
 	{
@@ -61,12 +63,13 @@ void	*monitoring_philos(void *args)
 			time = get_current_time(MILISEC) - get_long(&(philos[i]).mtx_philo, &(philos[i]).last_meal);
 			if (time > main->t_t_die)
 			{
-				set_bool(&main->global, &main->stop_dinner, 1);
 				ft_putlog(&main->childs[i], i, DIED);
+				set_bool(&main->global, &main->stop_dinner, 1);
 				return (NULL);
 			}
 			i++;
 		}
+		usleep(500);
 	}
 	return (NULL);
 }

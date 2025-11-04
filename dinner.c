@@ -6,11 +6,12 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:34:18 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/03 21:39:12 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/04 19:55:10 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+#include <unistd.h>
 
 void test_sleep(t_philos *main, sec time)
 {
@@ -25,7 +26,9 @@ void test_sleep(t_philos *main, sec time)
 int	try_to_eat(t_childs	*thread, t_philos *main)
 {
 	pthread_mutex_lock(&thread->firts_fork->fork);
+	ft_putlog(thread, thread->firts_fork->id, PICKED);
 	pthread_mutex_lock(&thread->second_fork->fork);
+	ft_putlog(thread, thread->second_fork->id, PICKED);
 	/*
 	change_mtx(&thread->firts_fork->fork, LOCK);
 	//ft_putlog(thread, thread->firts_fork->id, PICKED);
@@ -38,12 +41,14 @@ int	try_to_eat(t_childs	*thread, t_philos *main)
 		pthread_mutex_unlock(&thread->firts_fork->fork);
 		return (1);
 	}
-	ft_putlog(thread, thread->last_meal, EATING);
 	set_long(&thread->mtx_philo, &thread->last_meal, get_current_time(MILISEC));
+	ft_putlog(thread, thread->last_meal, EATING);
 	test_sleep(main, main->t_t_eat);
 	//ft_usleep(main, main->t_t_eat * 1000);
 	pthread_mutex_unlock(&thread->second_fork->fork);
 	pthread_mutex_unlock(&thread->firts_fork->fork);
+	if (get_bool(&main->global, &main->stop_dinner))
+		return (1);
 	ft_putlog(thread, 1, SLEEPING);
 	test_sleep(main, main->t_t_sleep);
 	/*
@@ -96,15 +101,15 @@ int	thinking(t_childs *thread, t_philos *main, int silent_mode)
 {
 	//sec	time_to_think;
 
-	if (thread->id % 2 != 0)
-		return (0);
 	if (get_bool(&main->global, &main->stop_dinner))
 		return (0);
-	if (!silent_mode)
-		ft_putlog(thread, thread->id, THINKING);
+	if (silent_mode)
+		test_sleep(main, main->t_t_eat);
 	else
 	{
-		test_sleep(main, main->t_t_eat);
+		ft_putlog(thread, thread->id, THINKING);
+		test_sleep(main, main->t_t_think);
+		//test_sleep(main, main->t_t_think);
 		return (0);
 	}
 	return (0);
@@ -118,14 +123,23 @@ void	*routine(void *args)
 	thread = (t_childs *)args;
 	main = thread->main;
 	set_long(&thread->mtx_philo, &thread->last_meal, main->t_t_start);
+	set_bool(&thread->mtx_philo, &thread->ready, 1);
 	wait_all_childs(thread->main);
-	//set_bool(&thread->mtx_philo, &thread->ready, 1);
-	thinking(thread, main, 1);
-	while (1)
+	if (main->n_philos == 1)
 	{
-		try_to_eat(thread, main);
+		test_sleep(main, main->t_t_die + 100);
+		return (0);
+	}
+	if (thread->id % 2 == 0)
+		test_sleep(main, main->t_t_eat);
+	while (!get_bool(&main->global, &main->stop_dinner))
+	{
+		if (try_to_eat(thread, main))
+			break ;
+		/*
 		if (get_bool(&main->global, &main->stop_dinner))
 			break ;
+		*/
 		thinking(thread, main, 0);
 	}
 	return (NULL);
