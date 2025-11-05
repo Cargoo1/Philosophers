@@ -6,20 +6,20 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:34:18 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/04 19:55:10 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/05 19:55:44 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+#include <pthread.h>
 #include <unistd.h>
 
 void test_sleep(t_philos *main, sec time)
 {
-	sec	begining;
+	sec	goal_t;
 
-	(void)main;
-	begining = get_current_time(MILISEC);
-	while (get_current_time(MILISEC) < begining + time)
+	goal_t = get_current_time(MILISEC) + time;
+	while (get_current_time(MILISEC) < goal_t && !get_bool(&main->global, &main->stop_dinner))
 		usleep(100);
 }
 
@@ -47,8 +47,6 @@ int	try_to_eat(t_childs	*thread, t_philos *main)
 	//ft_usleep(main, main->t_t_eat * 1000);
 	pthread_mutex_unlock(&thread->second_fork->fork);
 	pthread_mutex_unlock(&thread->firts_fork->fork);
-	if (get_bool(&main->global, &main->stop_dinner))
-		return (1);
 	ft_putlog(thread, 1, SLEEPING);
 	test_sleep(main, main->t_t_sleep);
 	/*
@@ -101,8 +99,6 @@ int	thinking(t_childs *thread, t_philos *main, int silent_mode)
 {
 	//sec	time_to_think;
 
-	if (get_bool(&main->global, &main->stop_dinner))
-		return (0);
 	if (silent_mode)
 		test_sleep(main, main->t_t_eat);
 	else
@@ -128,7 +124,7 @@ void	*routine(void *args)
 	if (main->n_philos == 1)
 	{
 		test_sleep(main, main->t_t_die + 100);
-		return (0);
+		return (NULL);
 	}
 	if (thread->id % 2 == 0)
 		test_sleep(main, main->t_t_eat);

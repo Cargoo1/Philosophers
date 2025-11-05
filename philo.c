@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/22 17:33:50 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/04 19:30:32 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/05 20:01:03 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ void	abort_exec(t_philos *main)
 int	main(int argc, char **argv)
 {
 	t_philos	main;
+	t_childs	monitor;
 
 	if (argc > 6 || argc < 5)
 	{
@@ -85,7 +86,7 @@ int	main(int argc, char **argv)
 	init_main(&main, argv);
 	if (init_threads(&main))
 		return (abort_exec(&main), main.errno);
-	if (create_threads(&main))
+	if (create_threads(&main, &monitor))
 		return (abort_exec(&main), main.errno);
 	return (main.errno);
 }

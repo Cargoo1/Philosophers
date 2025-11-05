@@ -6,13 +6,12 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/03 21:07:09 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/04 20:11:51 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/05 20:07:27 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 #include <pthread.h>
-#include <stdio.h>
 
 int	init_childs(t_philos *main, t_forks *forks)
 {
@@ -56,8 +55,10 @@ int	init_threads(t_philos *main)
 		return (main->errno = ERMUTEX, ERMUTEX);
 	if (main->n_philos == 1)
 		main->t_t_think = main->t_t_die;
-	else if (main->n_philos % 2 == 0 && main->t_t_eat > main->t_t_sleep)
-		main->t_t_think = main->t_t_eat - main->t_t_sleep;
+	else if (main->n_philos % 2 != 0 && main->t_t_eat > main->t_t_sleep)
+		main->t_t_think = (main->t_t_eat * 2) - main->t_t_sleep;
+	else if (main->n_philos % 2 != 0 && main->t_t_sleep > main->t_t_eat)
+		main->t_t_think = (main->t_t_eat * 2) - main->t_t_sleep;
 	else if (main->n_philos % 2)
 		main->t_t_think = main->t_t_eat;
 	else
@@ -65,23 +66,20 @@ int	init_threads(t_philos *main)
 	return (0);
 }
 
-int	create_threads(t_philos *main)
+int	create_threads(t_philos *main, t_childs *monitor)
 {
-	t_childs	monitor;
 	int			i;
 
 	i = 0;
 	main->t_t_start = get_current_time(MILISEC) + (main->n_philos * 10);
-	pthread_mutex_lock(&main->start_dinner);
 	while (i < main->n_philos)
 	{
 		if (pthread_create(&(main->childs[i]).thread, NULL, routine, &main->childs[i]))
 			return (main->errno = ERTHREAD, ERTHREAD);
 		i++;
 	}
-	if (create_monitor(main, &monitor))
+	if (create_monitor(main, monitor))
 		return (1);
-	pthread_mutex_unlock(&main->start_dinner);
 	i = 0;
 	while (i < main->n_philos)
 	{
@@ -89,6 +87,7 @@ int	create_threads(t_philos *main)
 			return (main->errno = ERTHREAD, ERTHREAD);
 		i++;
 	}
+	pthread_join(monitor->thread, NULL);
 	destroy_mutex(main->forks, main->n_philos);
 	free(main->forks);
 	return (0);

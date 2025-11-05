@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:35:47 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/04 19:43:28 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/05 19:45:31 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,17 +16,16 @@ int	ft_putlog(t_childs *thread, int id, t_mode mode)
 {
 	long	time;
 
-	time = get_current_time(MILISEC) - thread->main->t_t_start;
 	pthread_mutex_lock(&thread->main->log);
-	if (get_bool(&thread->main->global, &thread->main->stop_dinner))
+	if (get_bool(&thread->main->global, &thread->main->stop_dinner) && mode != DIED)
 	{
 		pthread_mutex_unlock(&thread->main->log);
 		return (1);
 	}
+	time = get_current_time(MILISEC) - thread->main->t_t_start;
 	(void)id;
 	if (mode == PICKED)
-		;
-		//printf("%ld %d picked the fork %d\n", time, thread->id, id);
+		printf("%ld %d picked the fork %d\n", time, thread->id, id);
 	else if (mode == EATING)
 		printf("%ld %d is eating\n", time, thread->id);
 	else if (mode == 6)

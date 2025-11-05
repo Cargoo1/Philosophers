@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/22 17:34:39 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/04 17:51:05 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/05 20:01:26 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,7 +141,7 @@ int		init_childs(t_philos *main, t_forks *forks);
 
 int		init_threads(t_philos *main);
 
-int		create_threads(t_philos *main);
+int		create_threads(t_philos *main, t_childs *monitor);
 
 //
 

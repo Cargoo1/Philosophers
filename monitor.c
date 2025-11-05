@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:09:48 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/04 18:43:44 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/05 20:04:36 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,8 @@ void	*monitoring_philos(void *args)
 			time = get_current_time(MILISEC) - get_long(&(philos[i]).mtx_philo, &(philos[i]).last_meal);
 			if (time > main->t_t_die)
 			{
-				ft_putlog(&main->childs[i], i, DIED);
 				set_bool(&main->global, &main->stop_dinner, 1);
+				ft_putlog(&main->childs[i], i, DIED);
 				return (NULL);
 			}
 			i++;
@@ -81,8 +81,6 @@ int	create_monitor(t_philos *main, t_childs *monitor)
 	monitor->firts_fork = NULL;
 	monitor->second_fork = NULL;
 	if (pthread_create(&monitor->thread, NULL, monitoring_philos, monitor))
-		return (main->errno = ERTHREAD, ERTHREAD);
-	if (pthread_detach(monitor->thread))
 		return (main->errno = ERTHREAD, ERTHREAD);
 	return (0);
 }
