@@ -6,14 +6,11 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/22 17:33:50 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/10 15:40:23 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/11 17:19:38 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-#include <pthread.h>
-#include <stdlib.h>
-#include <unistd.h>
 
 int	double_pointer_len(char **s)
 {
