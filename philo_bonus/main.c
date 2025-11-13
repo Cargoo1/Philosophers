@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/10 21:57:51 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/12 19:51:46 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/13 21:20:06 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,16 @@ int	init_main(t_philos *main, char **argv, int argc)
 	main->putlog = sem_open(main->sem_putlog, O_CREAT, 0666, 1);
 	if (main->putlog == SEM_FAILED)
 		return (main->errno = ERSEM, ERSEM);
+	if (main->n_philos == 1)
+		main->t_t_think = main->t_t_die;
+	else if (main->n_philos % 2 != 0 && main->t_t_eat > main->t_t_sleep)
+		main->t_t_think = (main->t_t_eat * 2) - main->t_t_sleep;
+	else if (main->n_philos % 2 != 0 && main->t_t_sleep > main->t_t_eat)
+		main->t_t_think = (main->t_t_eat * 2) - main->t_t_sleep;
+	else if (main->n_philos % 2)
+		main->t_t_think = main->t_t_eat;
+	else
+		main->t_t_think = 0;
 	return (0);
 }
 

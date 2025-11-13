@@ -6,7 +6,7 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/10 21:52:03 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/12 20:20:21 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/13 21:18:51 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 # include <stdio.h>
 
 # include <unistd.h>
+
+# include <pthread.h>
 
 # include <stdlib.h>
 
@@ -51,7 +53,10 @@ typedef enum t_mode
 typedef struct s_child
 {
 	long			last_meal;
+	sem_t			*local;
 	int				meals;
+	int				im_dead;
+	int				im_full;
 	int				id;
 	long			reference;
 	struct s_philos	*main;
@@ -63,6 +68,7 @@ typedef struct s_philos
 	long		t_t_start;
 	int			t_t_die;
 	int			t_t_eat;
+	int			t_t_think;
 	int			t_t_sleep;
 	int			n_meals;
 	const char	*sem_forks;
@@ -78,6 +84,23 @@ typedef struct s_philos
 	int			*pids;
 }	t_philos;
 
+// Setters
+
+void	set_long(sem_t *semaphore, long *variable, long value);
+
+void	increment_int(sem_t *semaphore, int *variable, int value);
+
+void	set_bool(sem_t *semaphore, int *variable, int value);
+
+//
+
+// Getters
+
+long	get_long(sem_t *semaphore, long *value);
+
+int		get_bool(sem_t *semaphore, int *value);
+
+//
 
 int		ft_putlog(t_child *philo, t_mode mode);
 

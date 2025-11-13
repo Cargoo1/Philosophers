@@ -1,4 +1,4 @@
-SRCS = main.c philos.c logs.c ft_atoi.c
+SRCS = main.c philos.c logs.c ft_atoi.c setters.c getters.c
 OBJS = ${SRCS:%c=%o}
 INCLUDES = philo_bonus.h
 CFLAGS = -Werror -Wall -Wextra -g3 -lpthread
