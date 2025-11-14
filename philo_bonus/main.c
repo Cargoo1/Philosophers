@@ -6,21 +6,12 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/10 21:57:51 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/13 21:20:06 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/14 14:49:59 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_bonus.h"
 #include <semaphore.h>
-
-int	test(sem_t *forks, int id)
-{
-	sem_wait(forks);
-	sleep(1);
-	printf("hola: %d\n", id);
-	sem_post(forks);
-	return (0);
-}
 
 int	verify_arguments(char **argv)
 {
@@ -40,17 +31,22 @@ int	verify_arguments(char **argv)
 	return (0);
 }
 
-int	init_main(t_philos *main, char **argv, int argc)
+void	calculate_t_t_think(t_philos *main)
 {
-	main->errno = 0;
-	main->n_philos = ft_atoi(argv[1]);
-	main->t_t_die = ft_atoi(argv[2]);
-	main->t_t_eat = ft_atoi(argv[3]);
-	main->t_t_sleep = ft_atoi(argv[4]);
-	if (argc == 6)
-		main->n_meals = ft_atoi(argv[5]);
+	if (main->n_philos == 1)
+		main->t_t_think = main->t_t_die;
+	else if (main->n_philos % 2 != 0 && main->t_t_eat > main->t_t_sleep)
+		main->t_t_think = (main->t_t_eat * 2) - main->t_t_sleep;
+	else if (main->n_philos % 2 != 0 && main->t_t_sleep > main->t_t_eat)
+		main->t_t_think = (main->t_t_eat * 2) - main->t_t_sleep;
+	else if (main->n_philos % 2)
+		main->t_t_think = main->t_t_eat;
 	else
-		main->n_meals = -1;
+		main->t_t_think = 0;
+}
+
+int	create_sems(t_philos *main)
+{
 	main->sem_forks = "forks";
 	main->sem_print_dead = "print_dead";
 	main->sem_putlog = "putlog";
@@ -71,16 +67,22 @@ int	init_main(t_philos *main, char **argv, int argc)
 	main->putlog = sem_open(main->sem_putlog, O_CREAT, 0666, 1);
 	if (main->putlog == SEM_FAILED)
 		return (main->errno = ERSEM, ERSEM);
-	if (main->n_philos == 1)
-		main->t_t_think = main->t_t_die;
-	else if (main->n_philos % 2 != 0 && main->t_t_eat > main->t_t_sleep)
-		main->t_t_think = (main->t_t_eat * 2) - main->t_t_sleep;
-	else if (main->n_philos % 2 != 0 && main->t_t_sleep > main->t_t_eat)
-		main->t_t_think = (main->t_t_eat * 2) - main->t_t_sleep;
-	else if (main->n_philos % 2)
-		main->t_t_think = main->t_t_eat;
+	return (0);
+}
+
+int	init_main(t_philos *main, char **argv, int argc)
+{
+	main->errno = 0;
+	main->n_philos = ft_atoi(argv[1]);
+	main->t_t_die = ft_atoi(argv[2]);
+	main->t_t_eat = ft_atoi(argv[3]);
+	main->t_t_sleep = ft_atoi(argv[4]);
+	if (argc == 6)
+		main->n_meals = ft_atoi(argv[5]);
 	else
-		main->t_t_think = 0;
+		main->n_meals = -1;
+	create_sems(main);
+	calculate_t_t_think(main);
 	return (0);
 }
 

@@ -6,19 +6,14 @@
 /*   By: acamargo <acamargo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/12 17:00:50 by acamargo          #+#    #+#             */
-/*   Updated: 2025/11/13 22:10:56 by acamargo         ###   ########.fr       */
+/*   Updated: 2025/11/14 14:59:14 by acamargo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_bonus.h"
 #include <fcntl.h>
-#include <pthread.h>
 #include <semaphore.h>
-#include <signal.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <sys/wait.h>
-#include <threads.h>
 #include <unistd.h>
 
 long	get_current_time()
@@ -45,10 +40,10 @@ int	im_i_dead(t_child *philo)
 
 void	ft_usleep(t_child *philo, long time)
 {
-	long	start_time;
+	long	goal;
 
-	start_time = get_current_time();
-	while (get_current_time() - start_time < time && (!get_bool(philo->local, &philo->im_dead)))
+	goal = get_current_time() + time;
+	while (get_current_time() < goal && (!get_bool(philo->local, &philo->im_dead)))
 		usleep(100);
 }
 
@@ -64,7 +59,7 @@ int	eating(t_child *philo, t_philos *main)
 		sem_post(main->forks);
 		return (1);
 	}
-	philo->last_meal = get_current_time();
+	set_long(philo->local, &philo->last_meal, get_current_time());
 	ft_putlog(philo, EATING);
 	ft_usleep(philo, main->t_t_eat);
 	sem_post(main->forks);
@@ -84,7 +79,8 @@ void	*monitoring(void *args)
 	philo = (t_child *)args;
 	while (!get_bool(philo->local, &philo->im_full))
 	{
-		if (get_current_time() - get_long(philo->local, &philo->last_meal) > philo->main->t_t_die)
+		long	elapsed = get_current_time() - get_long(philo->local, &philo->last_meal);
+		if (elapsed > philo->main->t_t_die)
 		{
 			set_bool(philo->local, &philo->im_dead, 1);
 			sem_wait(philo->main->print_dead);
@@ -96,6 +92,7 @@ void	*monitoring(void *args)
 	}
 	return (NULL);
 }
+
 int	thinking(t_child *philo, t_philos *main, int silent_mode)
 {
 	if (philo->im_full || get_bool(philo->local, &philo->im_dead))
@@ -136,7 +133,7 @@ int	init_philo(t_philos *main, t_child *philo, int id)
 	philo->im_full = 0;
 	philo->im_dead = 0;
 	philo->main = main;
-	unlink("local");
+	sem_unlink("local");
 	philo->local = sem_open("local", O_CREAT, 0666, 1);
 	if (philo->local == SEM_FAILED)
 		return (1);
@@ -152,6 +149,7 @@ void	start_routine(t_philos *main, int id)
 	if (init_philo(main, &philo, id))
 		exit(1);
 	pthread_create(&monitor, NULL, monitoring, &philo);
+	(void)monitor;
 	wait_all_children(main);
 	if (philo.id % 2 == 0)
 		thinking(&philo, main, 1);
@@ -175,7 +173,7 @@ void	*killer(void *args)
 	main = (t_philos *)args;
 	wait_all_children(main);
 	sem_wait(main->someone_died);
-	printf("KILL\n");
+	printf("KILL?\n");
 	i = 0;
 	while (i < main->n_philos)
 	{
